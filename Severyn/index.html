@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Project: L.O.V.E.</title>
+    <meta property="og:title" content="Вам пришло личное сообщение ❤️">
+<meta property="og:description" content="Нажмите, чтобы прочитать. (Только для Ксюши)">
+<meta property="og:image" content="https://img.freepik.com/free-vector/pixel-heart_23-2147515869.jpg"> <meta property="og:type" content="website">
+<meta name="theme-color" content="#000000">
+    <style>
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #000; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            user-select: none;
+        }
+
+        /* --- ТЕРМИНАЛ (ЧЕРНЫЙ ЭКРАН) --- */
+        #screen-terminal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 100;
+            padding: 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ff00;
+            overflow: hidden;
+        }
+        
+        .terminal-line { margin-bottom: 5px; font-size: 14px; opacity: 0; animation: fadeIn 0.1s forwards; }
+        
+        /* Кнопка запуска */
+        #start-btn {
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            background: transparent; border: 1px solid #00ff00; color: #00ff00;
+            padding: 15px 30px; font-family: 'Courier New', Courier, monospace;
+            font-size: 16px; cursor: pointer; text-transform: uppercase;
+            animation: blinkBorder 1s infinite; z-index: 101;
+        }
+
+        /* --- ОСНОВНОЙ ЭКРАН --- */
+        #screen-main {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #FFF0F0 0%, #FFD1D1 100%);
+            flex-direction: column; align-items: center; z-index: 5;
+            overflow-y: scroll; 
+            padding-bottom: 50px;
+        }
+
+        .container { 
+            width: 85%; max-width: 400px; z-index: 20; text-align: center; 
+            margin-top: 40px; 
+        }
+
+        /* Таймер */
+        .timer-box {
+            background: white; padding: 15px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(255, 71, 87, 0.15); margin-bottom: 20px;
+            animation: slideUp 0.6s ease-out;
+        }
+        .timer-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .timer-val { font-size: 22px; font-weight: 700; color: #ff4757; font-family: monospace; margin-top: 5px; }
+
+        /* Галерея */
+        .gallery-box {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px;
+            scrollbar-width: none; 
+        }
+        .gallery-item {
+            min-width: 100px; height: 100px; border-radius: 10px; background: #eee;
+            background-size: cover; background-position: center; border: 2px solid white;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+
+        /* Письмо */
+        .letter-box {
+            background: white; padding: 20px; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(255, 71, 87, 0.2);
+            min-height: 100px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px; animation: slideUp 0.8s ease-out;
+        }
+        #typewriter { font-size: 15px; line-height: 1.5; color: #333; white-space: pre-wrap; }
+
+        /* Кнопка */
+        .reason-btn {
+            background: #ff4757; color: white; border: none; padding: 15px 30px;
+            border-radius: 50px; font-size: 16px; font-weight: 600;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4); cursor: pointer;
+            width: 100%; outline: none; margin-bottom: 30px;
+            animation: slideUp 1s ease-out;
+        }
+        
+        /* Поп-ап */
+        #reason-modal {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) scale(0.9);
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            color: #d63031; padding: 15px 25px; border-radius: 20px;
+            font-size: 15px; font-weight: 600; opacity: 0; pointer-events: none; 
+            width: max-content; max-width: 85%; text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3); border: 2px solid white;
+            transition: all 0.3s; z-index: 100;
+        }
+        #reason-modal.show { opacity: 1; transform: translateX(-50%) scale(1); bottom: 40px; }
+
+        .heart { position: absolute; color: #ff4757; animation: fall linear forwards; z-index: 1; pointer-events: none; }
+
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes blinkBorder { 0% {border-color: #00ff00;} 50% {border-color: transparent;} 100% {border-color: #00ff00;} }
+        @keyframes slideUp { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="screen-terminal">
+        <div id="terminal-content"></div>
+        <button id="start-btn" onclick="startHackerSequence()">[ ЗАПУСТИТЬ СИСТЕМУ ]</button>
+    </div>
+
+    <div id="screen-main" onclick="createHeart(event.clientX, event.clientY)">
+        <div class="container">
+            
+            <div class="timer-box">
+                <div class="timer-label">Мы вместе уже:</div>
+                <div class="timer-val" id="timer">Loading...</div>
+            </div>
+
+            <div class="gallery-box">
+    <div class="gallery-item" style="background-image: url('1.jpg');"></div>
+    
+    <div class="gallery-item" style="background-image: url('2.jpg');"></div>
+    
+    <div class="gallery-item" style="background-image: url('3.jpg');"></div>
+    
+    <div class="gallery-item" style="background-image: url('4.jpg');"></div>
+</div>
+
+            <div class="letter-box">
+                <div><span id="typewriter"></span><span class="cursor">|</span></div>
+            </div>
+
+            <button class="reason-btn" onclick="showReason(event)">Жми сюда ❤️</button>
+            <p style="font-size: 10px; color: #aaa; margin-top: 10px;">(developed by your boyfriend)</p>
+        </div>
+        <div id="reason-modal"></div>
+    </div>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/muhammederdem/mini-player/master/mp3/3.mp3" type="audio/mp3">
+    </audio>
+
+    <script>
+        // === НАСТРОЙКИ (МЕНЯТЬ ТУТ) ===
+        const START_DATE = new Date(2025, 11, 1); 
+
+        const LETTER_TEXT = `Ксюшечка моя любимая! ❤️\n\nГоворят, что лучший подарок — это тот,\nв который вложили душу и время.\n\nСейчас не самое простое время,\nно я хочу, чтобы ты знала:\nты — моё самое главное богатство.\nДеньги приходят и уходят,\nа мы с тобой — навсегда.\n\nС Днем Святого Валентина!\nЯ тебя очень люблю!`; 
+        
+        const TERMINAL_LOGS = [
+            "Initializing love protocols...",
+            "Connecting to heart.server...",
+            "Access granted.",
+            "User identified: Любимая",
+            "Downloading happiness...",
+            "Success! Welcome."
+        ];
+
+        const REASONS = [
+            "Ты — самая красивая девушка на свете",
+            "С тобой я по-настоящему счастлив",
+            "Твоя улыбка освещает всё вокруг",
+            "Ты — моё вдохновение",
+            "Обожаю твой смех",
+            "Ты очень добрая и заботливая",
+            "С тобой уютно даже просто молчать",
+            "В твоих глазах можно утонуть",
+            "Ты делаешь этот мир лучше",
+            "Каждый день с тобой — это праздник",
+            "Ты вкусно пахнешь",
+            "Я восхищаюсь тобой",
+            "Ты — мой лучший друг",
+            "С тобой я чувствую себя героем",
+            "Люблю, когда ты обнимаешь меня",
+            "Ты понимаешь меня без слов",
+            "Ты — моя радость",
+            "Хочу быть с тобой всегда",
+            "Ты — самое дорогое, что у меня есть",
+            "Твой голос — моя любимая мелодия",
+            "Ты невероятная!",
+            "Рядом с тобой я становлюсь лучше",
+            "Ты — мой дом",
+            "Люблю тебя до Луны и обратно",
+            "Спасибо, что ты есть у меня"
+        ];
+
+        // ==============================
+
+        function startHackerSequence() {
+            document.getElementById('start-btn').style.display = 'none';
+            
+            // 1. Попытка запустить музыку при клике
+            const music = document.getElementById('bgMusic');
+            music.volume = 0.5;
+            
+            // Пытаемся запустить. Если ошибка - не страшно, сработает backup
+            music.play().then(() => {
+                console.log("Music started successfully");
+            }).catch(e => {
+                console.log("Autoplay blocked, waiting for interaction");
+            });
+
+            // Запускаем терминал
+            const term = document.getElementById('terminal-content');
+            let delay = 0;
+
+            TERMINAL_LOGS.forEach((line, index) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = 'terminal-line';
+                    div.innerText = "> " + line;
+                    term.appendChild(div);
+                }, delay);
+                delay += 800; 
+            });
+
+            setTimeout(() => {
+                document.getElementById('screen-terminal').style.display = 'none';
+                document.getElementById('screen-main').style.display = 'flex';
+                startMainFeatures();
+            }, (TERMINAL_LOGS.length * 800) + 1000);
+        }
+
+        function startMainFeatures() {
+            setInterval(updateTimer, 1000);
+            updateTimer();
+            typeWriter();
+            setInterval(() => createHeart(Math.random() * window.innerWidth, -20), 800);
+            
+            // 2. ПЛАН Б ДЛЯ МУЗЫКИ:
+            // Если музыка не запустилась в начале, она запустится при ЛЮБОМ клике на сайте
+            document.body.addEventListener('click', function() {
+                const music = document.getElementById('bgMusic');
+                if (music.paused) {
+                    music.play();
+                }
+            }, { once: false }); // Будет пробовать, пока не запустится
+        }
+
+        function updateTimer() {
+            const diff = new Date() - START_DATE;
+            const d = Math.floor(diff / (1000*60*60*24));
+            const h = Math.floor((diff / (1000*60*60)) % 24);
+            const m = Math.floor((diff / (1000*60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            document.getElementById('timer').innerText = `${d} д. ${pad(h)}:${pad(m)}:${pad(s)}`;
+        }
+        function pad(n) { return n < 10 ? '0'+n : n; }
+
+        let i = 0;
+        function typeWriter() {
+            if (i < LETTER_TEXT.length) {
+                document.getElementById("typewriter").innerHTML += LETTER_TEXT.charAt(i) === '\n' ? '<br>' : LETTER_TEXT.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+
+        let hideTimeout;
+        function showReason(e) {
+            e.stopPropagation();
+            if (navigator.vibrate) navigator.vibrate(30);
+            const reason = REASONS[Math.floor(Math.random() * REASONS.length)];
+            const modal = document.getElementById('reason-modal');
+            clearTimeout(hideTimeout);
+            modal.innerText = reason;
+            modal.classList.add('show');
+            hideTimeout = setTimeout(() => { modal.classList.remove('show'); }, 2000);
+        }
+
+        function createHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerText = '❤️';
+            heart.style.left = (x - 10) + "px";
+            heart.style.top = (y < 0 ? -20 : y) + "px";
+            heart.style.fontSize = (Math.random() * 20 + 15) + "px";
+            heart.style.animationDuration = (Math.random() * 2 + 3) + "s";
+            document.getElementById('screen-main').appendChild(heart);
+            setTimeout(() => heart.remove(), 5000);
+        }
+    </script>
+</body>
+</html>
